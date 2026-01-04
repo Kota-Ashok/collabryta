@@ -1,66 +1,144 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
-from app.models.message import Message
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, or_, and_
+from app.models.message import Message, Chat, ChatParticipant
 from app.models.user import User
-from app.schemas.message import MessageCreate
+from app.schemas.message import ChatCreate
+from typing import List, Optional
+from datetime import datetime
 
-def get_messages(db: Session, user_id: int, contact_id: int):
-    return db.query(Message).filter(
-        or_(
-            and_(Message.sender_id == user_id, Message.receiver_id == contact_id),
-            and_(Message.sender_id == contact_id, Message.receiver_id == user_id)
-        )
-    ).order_by(Message.timestamp).all()
-
-def create_message(db: Session, message: MessageCreate, sender_id: int):
-    db_message = Message(
-        sender_id=sender_id,
-        receiver_id=message.receiver_id,
-        content=message.content,
-        is_read=False
-    )
-    db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
-    return db_message
-
-def get_conversations(db: Session, user_id: int):
-    # Get all messages involving the user, ordered by latest first
-    all_messages = db.query(Message).filter(
-        or_(Message.sender_id == user_id, Message.receiver_id == user_id)
-    ).order_by(Message.timestamp.desc()).all()
+def get_user_chats(db: Session, user_id: int):
+    # Get all chats for the user
+    user_chats = db.query(Chat).join(ChatParticipant).filter(ChatParticipant.user_id == user_id).all()
     
-    # Filter to get only the latest message per contact
-    conversations = {}
-    for msg in all_messages:
-        other_id = msg.receiver_id if msg.sender_id == user_id else msg.sender_id
-        if other_id not in conversations:
-             conversations[other_id] = msg
-    
-    if not conversations:
-        return []
-
-    # Fetch user details for these contacts
-    users = db.query(User).filter(User.id.in_(conversations.keys())).all()
-    
-    result = []
-    for u in users:
-        last_msg = conversations[u.id]
+    results = []
+    for chat in user_chats:
+        # Get last message
+        last_msg = db.query(Message).filter(Message.chat_id == chat.id).order_by(Message.timestamp.desc()).first()
         
-        # Calculate unread count (messages sent BY contact TO me, and not read)
-        unread = db.query(Message).filter(
-            Message.sender_id == u.id,
-            Message.receiver_id == user_id,
-            Message.is_read == False
-        ).count()
+        info = {
+            "id": chat.id,
+            "is_group": chat.is_group,
+            "last_message": last_msg.content if last_msg else None,
+            "last_message_time": last_msg.timestamp if last_msg else None,
+            "unread_count": db.query(Message).filter(Message.chat_id == chat.id, Message.sender_id != user_id, Message.is_read == False).count()
+        }
 
-        result.append({
-            "id": u.id,
-            "name": u.name,
-            "unread_count": unread,
-            "status": "online" if u.is_active else "offline",
-            "is_active": True, # You might want to filter this
-            "last_message": last_msg.content,
-            "last_message_time": last_msg.timestamp
-        })
-    return result
+        if chat.is_group:
+            info["name"] = chat.name or "Group Chat"
+            info["status"] = "group" # Frontend handles this icon
+            info["other_user_id"] = None
+        else:
+            # Find the other participant
+            other_part = db.query(ChatParticipant).filter(
+                ChatParticipant.chat_id == chat.id, 
+                ChatParticipant.user_id != user_id
+            ).first()
+            
+            if other_part:
+                other_user = db.query(User).filter(User.id == other_part.user_id).first()
+                if other_user:
+                    info["name"] = other_user.name
+                    info["status"] = "online" if other_user.is_active else "offline" # Mock status
+                    info["other_user_id"] = other_user.id
+                else:
+                    info["name"] = "Unknown"
+                    info["status"] = "offline"
+                    info["other_user_id"] = None
+            else:
+                 # Self chat or broken
+                 info["name"] = "Me"
+                 info["status"] = "online"
+                 info["other_user_id"] = user_id # Self chat logic?
+
+        results.append(info)
+    
+    # Sort by time, recently active first
+    results.sort(key=lambda x: x['last_message_time'] or datetime.min, reverse=True)
+    return results
+
+def get_chat_messages(db: Session, chat_id: int, user_id: int):
+    # Check membership
+    is_member = db.query(ChatParticipant).filter(
+        ChatParticipant.chat_id == chat_id, ChatParticipant.user_id == user_id
+    ).first()
+    if not is_member:
+        return [] 
+        
+    return db.query(Message).options(joinedload(Message.sender)).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
+
+def create_chat(db: Session, chat_in: ChatCreate, creator_id: int):
+    # If P2P, check existence
+    if not chat_in.is_group and len(chat_in.participant_ids) == 1:
+        other_id = chat_in.participant_ids[0]
+        
+        # Find chats where creator is participant AND is_group False
+        c_chats_sub = db.query(ChatParticipant.chat_id).join(Chat).filter(
+            ChatParticipant.user_id == creator_id, 
+            Chat.is_group == False
+        ).subquery()
+        
+        # Check if other_id is in any of those chats
+        existing = db.query(ChatParticipant).filter(
+            ChatParticipant.user_id == other_id,
+            ChatParticipant.chat_id.in_(c_chats_sub)
+        ).first()
+        
+        if existing:
+            return db.query(Chat).filter(Chat.id == existing.chat_id).first()
+
+    # Create new chat
+    db_chat = Chat(
+        name=chat_in.name,
+        is_group=chat_in.is_group
+    )
+    db.add(db_chat)
+    db.commit()
+    db.refresh(db_chat)
+    
+    # Add participants
+    p_ids = set(chat_in.participant_ids)
+    p_ids.add(creator_id)
+    
+    for pid in p_ids:
+        # Verify user exists?
+        part = ChatParticipant(chat_id=db_chat.id, user_id=pid)
+        db.add(part)
+    
+    db.commit()
+    return db_chat
+
+def create_message(db: Session, chat_id: int, content: str, sender_id: int):
+    # Verify membership
+    is_member = db.query(ChatParticipant).filter(
+        ChatParticipant.chat_id == chat_id, ChatParticipant.user_id == sender_id
+    ).first()
+    if not is_member:
+         return None
+
+    msg = Message(
+        chat_id=chat_id,
+        sender_id=sender_id,
+        content=content
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return msg
+
+def mark_chat_as_read(db: Session, chat_id: int, user_id: int):
+    # Verify membership
+    is_member = db.query(ChatParticipant).filter(
+        ChatParticipant.chat_id == chat_id, ChatParticipant.user_id == user_id
+    ).first()
+    if not is_member:
+         return False
+
+    # Mark all messages in this chat NOT sent by me as read
+    db.query(Message).filter(
+        Message.chat_id == chat_id,
+        Message.sender_id != user_id,
+        Message.is_read == False
+    ).update({Message.is_read: True}) # type: ignore
+    
+    db.commit()
+    return True

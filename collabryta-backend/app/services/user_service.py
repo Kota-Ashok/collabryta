@@ -9,16 +9,10 @@ def get_user_by_email(db: Session, email: str) -> Optional[User]:
 
 def create_user(db: Session, user: UserCreate) -> User:
     hashed_password = get_password_hash(user.password)
+    user_data = user.model_dump(exclude={"password"})
     db_user = User(
-        email=user.email,
-        hashed_password=hashed_password,
-        name=user.name,
-        is_active=user.is_active,
-        role=user.role,
-        avatar=user.avatar,
-        phone=user.phone,
-        address=user.address,
-        bio=user.bio
+        **user_data,
+        hashed_password=hashed_password
     )
     db.add(db_user)
     db.commit()

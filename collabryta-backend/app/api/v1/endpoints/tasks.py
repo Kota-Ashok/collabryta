@@ -18,12 +18,24 @@ def read_tasks(
     """
     Retrieve tasks.
     """
-    # For now, let's say admins see all, regular users see theirs or assigned.
-    # To keep it simple based on previous flows:
-    # If we want to see ALL tasks for collaboration, simple get_tasks.
     # If we strictly want personalized:
-    tasks = task_service.get_tasks(db, skip=skip, limit=limit) # Currently returns all
+    tasks = task_service.get_tasks(db, skip=skip, limit=limit, user_id=current_user.id)
     return tasks
+
+@router.get("/{id}", response_model=schemas.Task)
+def read_task(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    current_user: models.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get task by ID.
+    """
+    task = task_service.get_task(db=db, task_id=id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
 
 @router.post("/", response_model=schemas.Task)
 def create_task(

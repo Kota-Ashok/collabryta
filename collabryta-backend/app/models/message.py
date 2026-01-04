@@ -1,17 +1,37 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
+
+class ChatParticipant(Base):
+    __tablename__ = "chat_participants"
+    chat_id = Column(Integer, ForeignKey("chats.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+
+class Chat(Base):
+    __tablename__ = "chats"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=True)  # Nullable for P2P chats (can use other user's name)
+    is_group = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
+    participants = relationship("User", secondary="chat_participants", backref="chats")
 
 class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    content = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-    is_read = Column(Boolean, default=False)
+    is_read = Column(Boolean, default=False) # Simplified: if anyone reads it? No, usually per user. 
+    # For MVP, we can leave is_read as is (global read status? or maybe just ignore read receipts for groups for now)
+    # Better: is_read is only meaningful in P2P or we need a MessageRead status table. 
+    # Let's keep is_read for simplicity, maybe just "processed".
 
+    chat = relationship("Chat", back_populates="messages")
     sender = relationship("User", foreign_keys=[sender_id])
-    receiver = relationship("User", foreign_keys=[receiver_id])

@@ -15,7 +15,7 @@ class Task(Base):
     due_date = Column(DateTime(timezone=True), nullable=True)
     
     owner_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", foreign_keys=[owner_id])
+    owner = relationship("User", back_populates="tasks", foreign_keys=[owner_id])
     
     assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     assignee = relationship("User", foreign_keys=[assignee_id])

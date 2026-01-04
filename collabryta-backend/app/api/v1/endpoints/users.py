@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -47,6 +48,23 @@ def read_user_me(
     Get current user.
     """
     return current_user
+
+@router.post("/heartbeat")
+def update_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    status: str = "Online"
+) -> Any:
+    """
+    Update current user status and last seen.
+    """
+    current_user.status = status
+    current_user.last_seen = datetime.now().isoformat()
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return {"status": "ok"}
 
 @router.put("/me", response_model=schemas.User)
 def update_user_me(
