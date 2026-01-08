@@ -6,12 +6,11 @@ from app.core.config import settings
 from app.api.v1.api import api_router
 from app.db.session import engine
 from app.db.base import Base
-# Import models to ensure they are registered with Base.metadata
 from app import models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables on startup
+    # Initialize database tables
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -21,7 +20,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Set all CORS enabled origins
+# CORS Configuration
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
@@ -35,8 +34,8 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to Collabryta API"}
-
-# Trigger Reload
-# touch
-# touch again
+    return {
+        "message": "Welcome to Collabryta API",
+        "version": "1.0.0",
+        "status": "healthy"
+    }

@@ -38,7 +38,7 @@ def read_task(
     return task
 
 @router.post("/", response_model=schemas.Task)
-def create_task(
+async def create_task(
     *,
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
@@ -47,11 +47,11 @@ def create_task(
     """
     Create new task.
     """
-    task = task_service.create_task(db=db, task=task_in, owner_id=current_user.id)
+    task = await task_service.create_task(db=db, task=task_in, owner_id=current_user.id)
     return task
 
 @router.put("/{id}", response_model=schemas.Task)
-def update_task(
+async def update_task(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
@@ -65,7 +65,7 @@ def update_task(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     # Add permissions check here if needed
-    task = task_service.update_task(db=db, task_id=id, task_update=task_in)
+    task = await task_service.update_task(db=db, task_id=id, task_update=task_in)
     return task
 
 @router.delete("/{id}", response_model=schemas.Task)

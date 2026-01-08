@@ -12,6 +12,7 @@ class Task(Base):
     status = Column(String, default="todo") # todo, in_progress, done
     priority = Column(String, default="medium") # low, medium, high
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     due_date = Column(DateTime(timezone=True), nullable=True)
     
     owner_id = Column(Integer, ForeignKey("users.id"))

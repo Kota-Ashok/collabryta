@@ -1,25 +1,37 @@
 from typing import List, Optional
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
-
-def get_tasks(db: Session, skip: int = 0, limit: int = 100, user_id: int = None) -> List[Task]:
-    query = db.query(Task)
-    if user_id:
-        query = query.filter((Task.owner_id == user_id) | (Task.assignee_id == user_id))
-    return query.offset(skip).limit(limit).all()
-
 from app.services import notification_service
 from app.schemas.notification import NotificationCreate
 
-def create_task(db: Session, task: TaskCreate, owner_id: int) -> Task:
+def get_tasks(db: Session, skip: int = 0, limit: int = 100, user_id: int = None) -> List[Task]:
+    now = datetime.now(timezone.utc)
+    # Hide tasks where due_date is in the past by more than 1 day
+    past_limit = now - timedelta(days=1)
+    
+    query = db.query(Task)
+    
+    # Filter out tasks that are "expired" (past due date by more than 1 day)
+    # We only apply this to tasks that have a due_date
+    query = query.filter(
+        (Task.due_date == None) | (Task.due_date >= past_limit)
+    )
+    
+    if user_id:
+        query = query.filter((Task.owner_id == user_id) | (Task.assignee_id == user_id))
+        
+    return query.offset(skip).limit(limit).all()
+
+async def create_task(db: Session, task: TaskCreate, owner_id: int) -> Task:
     db_task = Task(**task.model_dump(), owner_id=owner_id)
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
     
     # Notify Owner
-    notification_service.create_notification(db, NotificationCreate(
+    await notification_service.create_notification(db, NotificationCreate(
         user_id=owner_id,
         title="Task Created",
         description=f"Task '{db_task.title}' created successfully.",
@@ -28,7 +40,7 @@ def create_task(db: Session, task: TaskCreate, owner_id: int) -> Task:
     
     # Notify Assignee if different
     if db_task.assignee_id and db_task.assignee_id != owner_id:
-        notification_service.create_notification(db, NotificationCreate(
+        await notification_service.create_notification(db, NotificationCreate(
             user_id=db_task.assignee_id,
             title="New Task Assigned",
             description=f"You have been assigned to task '{db_task.title}'.",
@@ -40,7 +52,7 @@ def create_task(db: Session, task: TaskCreate, owner_id: int) -> Task:
 def get_task(db: Session, task_id: int) -> Optional[Task]:
     return db.query(Task).filter(Task.id == task_id).first()
 
-def update_task(db: Session, task_id: int, task_update: TaskUpdate) -> Optional[Task]:
+async def update_task(db: Session, task_id: int, task_update: TaskUpdate) -> Optional[Task]:
     db_task = get_task(db, task_id)
     if not db_task:
         return None
@@ -54,7 +66,7 @@ def update_task(db: Session, task_id: int, task_update: TaskUpdate) -> Optional[
     db.refresh(db_task)
     
     # Notify Owner
-    notification_service.create_notification(db, NotificationCreate(
+    await notification_service.create_notification(db, NotificationCreate(
         user_id=db_task.owner_id,
         title="Task Updated",
         description=f"Task '{db_task.title}' has been updated.",
@@ -63,7 +75,7 @@ def update_task(db: Session, task_id: int, task_update: TaskUpdate) -> Optional[
     
     # Notify Assignee if different
     if db_task.assignee_id and db_task.assignee_id != db_task.owner_id:
-        notification_service.create_notification(db, NotificationCreate(
+        await notification_service.create_notification(db, NotificationCreate(
             user_id=db_task.assignee_id,
             title="Task Updated",
             description=f"Task '{db_task.title}' assigned to you has been updated.",

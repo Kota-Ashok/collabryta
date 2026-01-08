@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from .user import User
 
 class TaskBase(BaseModel):
@@ -10,6 +10,16 @@ class TaskBase(BaseModel):
     priority: Optional[str] = "medium"
     due_date: Optional[datetime] = None
     assignee_id: Optional[int] = None
+
+    @field_validator("due_date")
+    @classmethod
+    def validate_due_date(cls, v: Optional[datetime]) -> Optional[datetime]:
+        if v:
+            # Check if date is in the past (only date part for simplicity)
+            now = datetime.now()
+            if v.date() < now.date():
+                raise ValueError("Due date cannot be in the past")
+        return v
 
 class TaskCreate(TaskBase):
     title: str

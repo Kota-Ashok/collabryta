@@ -41,7 +41,7 @@ def get_messages(
     return msgs
 
 @router.post("/{chat_id}", response_model=MessageResponse)
-def send_message(
+async def send_message(
     chat_id: int,
     content: MessageCreate,
     db: Session = Depends(deps.get_db),
@@ -50,7 +50,7 @@ def send_message(
     """
     Send a message to a specific chat.
     """
-    msg = message_service.create_message(db, chat_id=chat_id, content=content.content, sender_id=current_user.id)
+    msg = await message_service.create_message(db, chat_id=chat_id, content=content.content, sender_id=current_user.id)
     if not msg:
         raise HTTPException(status_code=403, detail="Not a member of this chat")
     return msg

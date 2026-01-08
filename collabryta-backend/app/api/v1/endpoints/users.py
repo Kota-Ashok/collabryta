@@ -78,3 +78,23 @@ def update_user_me(
     """
     user = user_service.update_user(db, db_user=current_user, user_in=user_in)
     return user
+
+@router.post("/verify-otp")
+def verify_otp(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    otp: str
+) -> Any:
+    """
+    Verify OTP for 2FA. In a real app, this would check against a stored or TOTP code.
+    For this implementation, we simulate the verification.
+    """
+    if otp == "123456":
+        current_user.two_factor_enabled = True
+        db.add(current_user)
+        db.commit()
+        db.refresh(current_user)
+        return {"status": "verified", "user": current_user}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid OTP")

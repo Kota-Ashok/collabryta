@@ -50,7 +50,7 @@ async def upload_file(db: Session, file: UploadFile, title: str, description: st
     from app.services import notification_service
     from app.schemas.notification import NotificationCreate
     
-    notification_service.create_notification(db, NotificationCreate(
+    await notification_service.create_notification(db, NotificationCreate(
         user_id=user_id,
         title="File Uploaded",
         description=f"File '{title}' uploaded successfully.",

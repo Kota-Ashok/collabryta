@@ -1,7 +1,17 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, tasks, messages, files, meetings, notifications
+from app.api.v1.endpoints import (
+    auth, 
+    users, 
+    tasks, 
+    messages, 
+    files, 
+    meetings, 
+    notifications
+)
 
 api_router = APIRouter()
+
+# Include all module routers
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])

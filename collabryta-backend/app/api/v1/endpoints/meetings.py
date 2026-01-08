@@ -11,14 +11,15 @@ router = APIRouter()
 def read_meetings(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
+    recent_only: bool = True
 ) -> Any:
     """
     Retrieve meetings for current user (hosted + attended).
     """
-    return meeting_service.get_user_meetings(db, user_id=current_user.id)
+    return meeting_service.get_user_meetings(db, user_id=current_user.id, recent_only=recent_only)
 
 @router.post("/", response_model=schemas.Meeting)
-def create_meeting(
+async def create_meeting(
     *,
     db: Session = Depends(deps.get_db),
     meeting_in: schemas.MeetingCreate,
@@ -27,7 +28,7 @@ def create_meeting(
     """
     Create new meeting.
     """
-    return meeting_service.create_meeting(db, meeting_in=meeting_in, host_id=current_user.id)
+    return await meeting_service.create_meeting(db, meeting_in=meeting_in, host_id=current_user.id)
 
 @router.delete("/{id}", response_model=schemas.Meeting)
 def delete_meeting(
