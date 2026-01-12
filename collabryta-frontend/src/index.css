@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 37, 99, 235;
+    /* Blue 600 */
+    --background: 248, 250, 252;
+    --foreground: 15, 23, 42;
+    --card: 255, 255, 255;
+    --border: 226, 232, 240;
+  }
+
+  body {
+    @apply antialiased text-slate-900 bg-slate-50;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight font-bold text-slate-900;
+  }
+}
+
+@layer components {
+
+  /* Normal Corporate Card - Solid White, Subtle Shadow */
+  .glass-card {
+    @apply bg-white border border-slate-200;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  .premium-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  .premium-shadow-hover {
+    @apply transition-shadow duration-300;
+  }
+
+  .premium-shadow-hover:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  }
+
+  .gradient-text {
+    @apply text-blue-700 font-bold;
+  }
+
+  /* Solid Blue Primary Button */
+  .btn-premium {
+    @apply px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold transition-colors duration-200 hover:bg-blue-700 active:bg-blue-800 flex items-center justify-center gap-2 shadow-sm;
+  }
+
+  .btn-outline {
+    @apply px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold transition-colors duration-200 hover:bg-slate-50 hover:text-blue-700 active:bg-slate-100 flex items-center justify-center gap-2;
+  }
+
+  .input-premium {
+    @apply w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all duration-200 font-medium text-slate-800 placeholder:text-slate-400;
+  }
+
+  .card-premium {
+    @apply bg-white border border-slate-200 rounded-2xl p-6 shadow-sm;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 font-medium text-slate-500 hover:text-blue-700 hover:bg-blue-50;
+  }
+
+  .sidebar-item-active {
+    @apply text-blue-700 bg-blue-50 font-bold;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
