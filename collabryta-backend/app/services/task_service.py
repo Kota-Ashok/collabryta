@@ -8,7 +8,7 @@ def get_user_tasks(db: Session, user_id: int) -> List[models.Task]:
         (models.Task.owner_id == user_id) | (models.Task.assigned_to_id == user_id)
     ).all()
 
-def create_task(db: Session, task_in: schemas.TaskCreate, owner_id: int) -> models.Task:
+async def create_task(db: Session, task_in: schemas.TaskCreate, owner_id: int) -> models.Task:
     task_data = task_in.model_dump()
     db_obj = models.Task(
         **task_data,
@@ -20,13 +20,27 @@ def create_task(db: Session, task_in: schemas.TaskCreate, owner_id: int) -> mode
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
+    
+    # Notify Assignee
+    from app.services import notification_service
+    from app.schemas.notification import NotificationCreate
+    
+    if db_obj.assigned_to_id:
+        await notification_service.create_notification(db, NotificationCreate(
+            user_id=db_obj.assigned_to_id,
+            title="New Task Assigned",
+            description=f"Task '{db_obj.title}' has been assigned to you.",
+            type="info"
+        ))
+    
     return db_obj
 
-def update_task(db: Session, task_id: int, task_in: schemas.TaskUpdate) -> Optional[models.Task]:
+async def update_task(db: Session, task_id: int, task_in: schemas.TaskUpdate) -> Optional[models.Task]:
     task = get_task(db, task_id)
     if not task:
         return None
     
+    old_status = task.status
     update_data = task_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(task, field, value)
@@ -34,6 +48,29 @@ def update_task(db: Session, task_id: int, task_in: schemas.TaskUpdate) -> Optio
     db.add(task)
     db.commit()
     db.refresh(task)
+    
+    # Notify Owner/Assignee on status change
+    from app.services import notification_service
+    from app.schemas.notification import NotificationCreate
+    
+    if "status" in update_data and old_status != task.status:
+        # Notify Owner if someone else changed it
+        await notification_service.create_notification(db, NotificationCreate(
+            user_id=task.owner_id,
+            title="Task Status Updated",
+            description=f"Task '{task.title}' status changed to {task.status}.",
+            type="info"
+        ))
+        
+        # Notify Assignee if different from owner
+        if task.assigned_to_id != task.owner_id:
+            await notification_service.create_notification(db, NotificationCreate(
+                user_id=task.assigned_to_id,
+                title="Task Status Updated",
+                description=f"Task '{task.title}' status changed to {task.status}.",
+                type="info"
+            ))
+            
     return task
 
 def delete_task(db: Session, task_id: int) -> Optional[models.Task]:

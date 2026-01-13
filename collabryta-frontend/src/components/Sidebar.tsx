@@ -6,10 +6,9 @@ import {
   FileUp,
   ClipboardList,
   LogOut,
-  Users,
   Settings,
   Video,
-  Sparkles,
+  Layers,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -42,30 +41,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/10 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-40 lg:hidden"
             onClick={onClose}
           />
         )}
       </AnimatePresence>
 
       <aside
-        className={`fixed top-4 left-4 z-50 h-[calc(100vh-32px)] w-72 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 transform transition-transform duration-500 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-[calc(100%+32px)]"
-          } lg:translate-x-0 flex flex-col`}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-zinc-900 text-zinc-100 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Brand Section */}
         <div
-          className="p-6 flex items-center gap-3 cursor-pointer group"
+          className="h-16 flex items-center px-6 border-b border-zinc-800 cursor-pointer"
           onClick={() => navigate("/dashboard")}
         >
-          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-md shadow-slate-200">
-            <Sparkles size={16} className="text-white" fill="currentColor" />
+          <div className="flex items-center gap-2.5">
+            <div className="bg-white text-zinc-900 p-1.5 rounded-lg">
+              <Layers size={18} strokeWidth={2.5} />
+            </div>
+            <span className="text-lg font-bold tracking-tight">Collabryta</span>
           </div>
-          <h1 className="text-lg font-extrabold tracking-tight text-slate-900">Collabryta.</h1>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 space-y-1">
-
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+          <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider px-3 mb-2">Platform</div>
           {navItems.map(({ label, icon: Icon, path }) => {
             const active = location.pathname.startsWith(path);
             return (
@@ -75,24 +76,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   navigate(path);
                   onClose();
                 }}
-                className={`w-full group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 ${active
-                  ? "bg-blue-50 text-blue-700 font-bold"
-                  : "text-slate-500 hover:text-blue-600 hover:bg-slate-50 font-medium"
+                className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${active
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
                   }`}
               >
-                <div className={`p-1.5 rounded-md transition-all duration-300 ${active ? "bg-white shadow-sm" : "group-hover:bg-white/50"}`}>
-                  <Icon
-                    size={16}
-                    strokeWidth={active ? 2.5 : 2}
-                    className={`${active ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600"
-                      } transition-colors`}
-                  />
-                </div>
-                <span className="text-xs">{label}</span>
+                <Icon
+                  size={18}
+                  strokeWidth={2}
+                  className={`${active ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"
+                    } transition-colors`}
+                />
+                {label}
                 {active && (
                   <motion.div
-                    layoutId="sidebar-active-dot"
-                    className="ml-auto w-1 h-1 bg-blue-600 rounded-full"
+                    layoutId="sidebar-active-indicator"
+                    className="ml-auto w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.5)]"
                   />
                 )}
               </button>
@@ -101,17 +100,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer / Logout */}
-        <div className="p-4 mt-auto border-t border-slate-100">
+        <div className="p-4 border-t border-zinc-800">
           <button
             onClick={() => {
               authService.logout();
               navigate("/");
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all duration-300"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
           >
-            <div className="p-1.5 rounded-md group-hover:bg-white">
-              <LogOut size={16} />
-            </div>
+            <LogOut size={18} />
             Sign Out
           </button>
         </div>

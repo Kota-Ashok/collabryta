@@ -8,26 +8,14 @@ import {
   Video,
   Upload,
   Search,
-  MoreHorizontal,
   Download,
   Trash2,
-  Clock,
-  ChevronRight,
   HardDrive,
-  Zap,
-  Layers,
-  Activity,
-  Shield,
-  Star,
-  Plus,
-  Loader2,
-  ArrowUpRight,
   Filter,
-  MoreVertical
+  ArrowUpRight
 } from "lucide-react";
 import { fileService, FileData } from "../../services/fileService";
-
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const FilesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,11 +52,11 @@ const FilesPage: React.FC = () => {
   const counts = getFileCounts(recentFiles);
 
   const fileCategories = [
-    { id: "word", name: "Documents", count: counts.word, icon: <FileText size={24} />, color: "indigo" },
-    { id: "pdf", name: "PDF Files", count: counts.pdf, icon: <FileText size={24} />, color: "rose" },
-    { id: "spread", name: "Spreadsheets", count: counts.spread, icon: <FileSpreadsheet size={24} />, color: "emerald" },
-    { id: "image", name: "Images", count: counts.image, icon: <ImageIcon size={24} />, color: "amber" },
-    { id: "other", name: "Other", count: counts.other, icon: <File size={24} />, color: "slate" },
+    { id: "word", name: "Documents", count: counts.word, icon: <FileText size={20} /> },
+    { id: "pdf", name: "PDF Files", count: counts.pdf, icon: <FileText size={20} /> },
+    { id: "spread", name: "Spreadsheets", count: counts.spread, icon: <FileSpreadsheet size={20} /> },
+    { id: "image", name: "Images", count: counts.image, icon: <ImageIcon size={20} /> },
+    { id: "other", name: "Other", count: counts.other, icon: <File size={20} /> },
   ];
 
   useEffect(() => {
@@ -77,9 +65,7 @@ const FilesPage: React.FC = () => {
       fetchFiles(false);
     }, 60000);
 
-    return () => {
-      clearInterval(pollInterval);
-    };
+    return () => clearInterval(pollInterval);
   }, []);
 
   const formatSize = (bytes: number) => {
@@ -92,12 +78,12 @@ const FilesPage: React.FC = () => {
 
   const mapFileType = (ftype: string | undefined, filename: string) => {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
-    if (['doc', 'docx'].includes(ext)) return <FileText size={20} className="text-indigo-600" />;
-    if (['pdf'].includes(ext)) return <FileText size={20} className="text-rose-600" />;
-    if (['xls', 'xlsx', 'csv'].includes(ext)) return <FileSpreadsheet size={20} className="text-emerald-600" />;
-    if (['jpg', 'jpeg', 'png', 'svg', 'gif'].includes(ext)) return <ImageIcon size={20} className="text-amber-600" />;
-    if (['mp4', 'mov', 'avi'].includes(ext)) return <Video size={20} className="text-violet-600" />;
-    return <File size={20} className="text-slate-400" />;
+    if (['doc', 'docx'].includes(ext)) return <FileText size={24} className="text-blue-600" />;
+    if (['pdf'].includes(ext)) return <FileText size={24} className="text-red-500" />;
+    if (['xls', 'xlsx', 'csv'].includes(ext)) return <FileSpreadsheet size={24} className="text-emerald-500" />;
+    if (['jpg', 'jpeg', 'png', 'svg', 'gif'].includes(ext)) return <ImageIcon size={24} className="text-indigo-500" />;
+    if (['mp4', 'mov', 'avi'].includes(ext)) return <Video size={24} className="text-violet-500" />;
+    return <File size={24} className="text-zinc-400" />;
   };
 
   const filteredFiles = recentFiles.filter(file => {
@@ -124,21 +110,19 @@ const FilesPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#fcfdfe] text-slate-900 px-8 py-10 lg:px-12 animate-fade-in relative">
+    <div className="animate-in space-y-8">
       <div className="max-w-7xl mx-auto">
-
-        {/* Header Area */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Files</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">Manage, share and categorize your team assets.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Files</h1>
+            <p className="text-sm text-zinc-500 mt-1">Manage team assets and documents.</p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative group hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
               <input
-                className="w-64 pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none transition-all font-bold text-sm text-slate-900 placeholder:text-slate-400 shadow-sm"
+                className="w-56 pl-9 pr-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:ring-2 focus:ring-zinc-900/5 outline-none transition-all placeholder:text-zinc-400"
                 placeholder="Search files..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -146,103 +130,87 @@ const FilesPage: React.FC = () => {
             </div>
             <button
               onClick={() => navigate("/files/upload")}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+              className="btn-primary"
             >
-              <Upload size={18} strokeWidth={2.5} />
-              Upload File
+              <Upload size={16} />
+              Upload
             </button>
           </div>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-12">
+        {/* Categories */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
           {fileCategories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-              className={`p-6 rounded-2xl border transition-all relative group text-left overflow-hidden ${selectedCategory === cat.id
-                ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-200'
-                : 'bg-white border-slate-200 shadow-sm hover:border-blue-200 hover:shadow-md'
+              className={`p-4 rounded-xl border text-left transition-all ${selectedCategory === cat.id
+                ? 'bg-zinc-900 border-zinc-900 text-white'
+                : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-900'
                 }`}
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform group-hover:scale-105 ${selectedCategory === cat.id ? 'bg-white/20 text-white' : `bg-slate-50 text-slate-400`
-                }`}>
+              <div className={`mb-3 ${selectedCategory === cat.id ? 'text-zinc-300' : 'text-zinc-400'}`}>
                 {cat.icon}
               </div>
-              <h3 className={`text-sm font-bold truncate mb-1 ${selectedCategory === cat.id ? 'text-white' : 'text-slate-900'}`}>
-                {cat.name}
-              </h3>
-              <p className={`text-xs font-semibold uppercase tracking-wider ${selectedCategory === cat.id ? 'text-blue-100' : 'text-slate-400'}`}>
-                {cat.count} Files
-              </p>
+              <div className="text-sm font-semibold">{cat.name}</div>
+              <div className={`text-xs mt-0.5 ${selectedCategory === cat.id ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                {cat.count} items
+              </div>
             </button>
           ))}
         </div>
 
-        <div className="flex flex-col gap-10">
-
-          {/* File List */}
-          <div className="w-full space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">Recent Files</h3>
-                <p className="text-sm text-slate-500 font-medium">Quick access to your latest uploads</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm">
-                  <Filter size={18} />
-                </button>
-                <div className="w-px h-4 bg-slate-200 mx-2" />
-                <button className="text-xs font-bold text-blue-600 hover:underline underline-offset-4">View All</button>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="py-24 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
-                <div className="w-12 h-12 border-4 border-slate-50 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-sm font-semibold text-slate-400">Accessing storage...</p>
-              </div>
-            ) : filteredFiles.length === 0 ? (
-              <div className="py-24 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
-                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <HardDrive className="text-slate-300" size={32} />
-                </div>
-                <h4 className="text-lg font-bold text-slate-900">No files found</h4>
-                <p className="text-sm text-slate-400 font-medium mt-1">Try uploading a new file or changing filters.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredFiles.map((file) => (
-                  <div key={file.id} className="p-6 bg-white border border-slate-200 rounded-3xl flex flex-col group hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all cursor-pointer relative">
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all flex gap-2">
-                      <a
-                        href={`http://localhost:8000/${file.file_path.replace(/\\/g, '/').replace(/^app\//, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all flex items-center justify-center"
-                        title="Download"
-                      >
-                        <Download size={16} />
-                      </a>
-                      <button className="p-2 bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all"><Trash2 size={16} /></button>
-                    </div>
-
-                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
-                      {mapFileType(file.file_type, file.filename)}
-                    </div>
-
-                    <h4 className="text-sm font-bold text-slate-900 truncate mb-1 group-hover:text-blue-600 transition-colors">{file.filename}</h4>
-
-                    <div className="mt-auto pt-4 flex items-center justify-between text-[10px] font-bold text-slate-400 border-t border-slate-50">
-                      <span className="flex items-center gap-1.5"><HardDrive size={14} className="text-slate-300" /> {formatSize(file.file_size_bytes)}</span>
-                      <span className="flex items-center gap-1.5"><Clock size={14} className="text-slate-300" /> {new Date(file.uploaded_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* File List */}
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-zinc-100 bg-zinc-50/50">
+            <h3 className="text-sm font-semibold text-zinc-900">All Files</h3>
           </div>
 
+          {loading ? (
+            <div className="p-12 text-center">
+              <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-xs text-zinc-500 uppercase tracking-widest">Loading storage...</p>
+            </div>
+          ) : filteredFiles.length === 0 ? (
+            <div className="p-16 text-center">
+              <HardDrive className="text-zinc-300 mx-auto mb-3" size={32} />
+              <p className="text-sm text-zinc-900 font-medium">No files found</p>
+              <p className="text-xs text-zinc-500">Upload a new file to get started.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-zinc-100">
+              {filteredFiles.map((file) => (
+                <div key={file.id} className="p-4 flex items-center gap-4 hover:bg-zinc-50 group transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-zinc-50 flex items-center justify-center shrink-0 border border-zinc-100">
+                    {mapFileType(file.file_type, file.filename)}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-zinc-900 truncate">{file.filename}</h4>
+                    <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5">
+                      <span>{formatSize(file.file_size_bytes)}</span>
+                      <span>•</span>
+                      <span>{new Date(file.uploaded_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a
+                      href={`http://localhost:8000/${file.file_path.replace(/\\/g, '/').replace(/^app\//, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      <Download size={16} />
+                    </a>
+                    <button className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

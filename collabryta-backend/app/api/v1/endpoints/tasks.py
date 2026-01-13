@@ -35,7 +35,7 @@ def read_task(
     return task
 
 @router.post("/", response_model=schemas.Task)
-def create_task(
+async def create_task(
     *,
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
@@ -44,10 +44,10 @@ def create_task(
     """
     Create new task.
     """
-    return task_service.create_task(db, task_in=task_in, owner_id=current_user.id)
+    return await task_service.create_task(db, task_in=task_in, owner_id=current_user.id)
 
 @router.put("/{id}", response_model=schemas.Task)
-def update_task(
+async def update_task(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
@@ -63,7 +63,7 @@ def update_task(
     if task.owner_id != current_user.id and task.assigned_to_id != current_user.id:
          raise HTTPException(status_code=403, detail="Not enough permissions")
          
-    return task_service.update_task(db, task_id=id, task_in=task_in)
+    return await task_service.update_task(db, task_id=id, task_in=task_in)
 
 @router.delete("/{id}", response_model=schemas.Task)
 def delete_task(

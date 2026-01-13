@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import Footer from "../components/Footer";
@@ -10,9 +10,8 @@ import { authService } from "../services/authService";
 const MainLayout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const isMessagesPage = location.pathname.startsWith("/messages");
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Initial heartbeat
     if (authService.isAuthenticated()) {
       userService.updateStatus("Online").catch(console.error);
@@ -29,31 +28,30 @@ const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-slate-50/50 font-sans text-slate-900">
+    <div className="flex h-screen bg-zinc-50 font-sans text-zinc-900 overflow-hidden">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-500 min-h-screen ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-80'}`}>
-        <div className={`flex flex-col flex-1 ${isMessagesPage ? 'p-0' : 'p-4'}`}>
-          <Topbar
-            isSidebarOpen={isSidebarOpen}
-            onMenuClick={() => setSidebarOpen((p) => !p)}
-          />
+      <div className="flex-1 flex flex-col w-full lg:ml-72 transition-all duration-300">
+        <Topbar
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={() => setSidebarOpen((p) => !p)}
+        />
 
-          <main className={`flex-1 w-full overflow-hidden mt-4 ${isMessagesPage ? 'p-0 bg-transparent shadow-none border-none rounded-none' : 'max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 bg-white/50 backdrop-blur-sm rounded-[32px] border border-slate-200/50 shadow-sm'}`}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className={isMessagesPage ? "h-full" : ""}
-            >
-              <Outlet />
-            </motion.div>
-          </main>
-        </div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-zinc-50/50 flex flex-col">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full"
+          >
+            <Outlet />
+          </motion.div>
 
-        <Footer />
+          <Footer />
+        </main>
       </div>
     </div>
   );

@@ -112,6 +112,23 @@ async def create_message(db: Session, chat_id: int, content: str, sender_id: int
     db.commit()
     db.refresh(msg)
     
+    # Notify Participants
+    from app.services import notification_service
+    from app.schemas.notification import NotificationCreate
+    
+    sender = db.query(User).filter(User.id == sender_id).first()
+    sender_name = sender.name if sender else "Someone"
+    
+    participants = db.query(ChatParticipant).filter(ChatParticipant.chat_id == chat_id).all()
+    for part in participants:
+        if part.user_id != sender_id:
+            await notification_service.create_notification(db, NotificationCreate(
+                user_id=part.user_id,
+                title=f"New Message from {sender_name}",
+                description=content[:50] + ("..." if len(content) > 50 else ""),
+                type="info"
+            ))
+    
     return msg
 
 def mark_chat_as_read(db: Session, chat_id: int, user_id: int) -> bool:

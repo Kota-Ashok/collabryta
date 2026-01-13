@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.models.notification import Notification
 from app.schemas.notification import NotificationCreate
+import json
 
 def get_notifications(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List[Notification]:
     """Retrieves notifications for a user, filtering out those older than 24 hours."""

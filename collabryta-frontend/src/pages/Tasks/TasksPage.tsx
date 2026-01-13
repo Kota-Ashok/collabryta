@@ -6,11 +6,10 @@ import {
     Plus,
     Trash2,
     Calendar,
-    AlertCircle,
-    User,
-    Filter
+    Filter,
+    CheckCircle2
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { taskService, Task } from "../../services/taskService";
 
 const TasksPage: React.FC = () => {
@@ -19,15 +18,15 @@ const TasksPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'all' | 'today' | 'upcoming' | 'completed'>('all');
 
-    const fetchTasks = async () => {
-        setLoading(true);
+    const fetchTasks = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         try {
             const data = await taskService.getAllTasks();
             setTasks(data);
         } catch (error) {
             console.error("Failed to fetch tasks", error);
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     };
 
@@ -63,14 +62,6 @@ const TasksPage: React.FC = () => {
         return d.toDateString() === today.toDateString();
     };
 
-    const isUpcoming = (dateString?: string) => {
-        if (!dateString) return false;
-        const d = new Date(dateString);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return d >= today; // Including today? No, usually upcoming is after today.
-    }
-
     const filteredTasks = tasks.filter(task => {
         if (activeTab === 'completed') return task.status === 'Completed';
         if (activeTab === 'today') {
@@ -82,39 +73,38 @@ const TasksPage: React.FC = () => {
             const taskDate = task.start_date ? new Date(task.start_date) : null;
             return task.status !== 'Completed' && taskDate && taskDate > today;
         }
-        return true; // all
+        return true;
     });
 
     const getPriorityColor = (priority: string) => {
         switch (priority?.toLowerCase()) {
-            case 'high': return 'text-rose-600 bg-rose-50 border-rose-100';
+            case 'high': return 'text-red-600 bg-red-50 border-red-100';
             case 'medium': return 'text-amber-600 bg-amber-50 border-amber-100';
             case 'low': return 'text-emerald-600 bg-emerald-50 border-emerald-100';
-            default: return 'text-slate-500 bg-slate-50 border-slate-100';
+            default: return 'text-zinc-500 bg-zinc-50 border-zinc-100';
         }
     }
 
     return (
-        <div className="min-h-screen text-slate-900 pb-20 animate-fade-in relative">
-            <div className="max-w-7xl mx-auto relative z-10">
-
+        <div className="animate-in space-y-8">
+            <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-2">Tasks</h1>
-                        <p className="text-slate-500 font-medium text-sm">Manage your daily objectives and assignments.</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Tasks</h1>
+                        <p className="text-zinc-500 text-sm mt-1">Manage your daily objectives and assignments.</p>
                     </div>
                     <button
                         onClick={() => navigate("/tasks/add")}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                        className="btn-primary"
                     >
-                        <Plus size={20} strokeWidth={2.5} />
-                        <span className="font-bold">New Task</span>
+                        <Plus size={16} />
+                        New Task
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+                <div className="flex items-center gap-1 mb-6 border-b border-zinc-200">
                     {[
                         { id: 'all', label: 'All Tasks' },
                         { id: 'today', label: 'Today' },
@@ -124,9 +114,9 @@ const TasksPage: React.FC = () => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
+                                ? 'border-zinc-900 text-zinc-900'
+                                : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300'
                                 }`}
                         >
                             {tab.label}
@@ -136,60 +126,61 @@ const TasksPage: React.FC = () => {
 
                 {/* Content */}
                 {loading ? (
-                    <div className="py-24 text-center glass-card rounded-[40px]">
-                        <div className="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading tasks...</p>
+                    <div className="py-24 text-center">
+                        <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-full animate-spin mx-auto mb-4" />
+                        <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Loading tasks...</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-3">
                         {filteredTasks.length > 0 ? filteredTasks.map(task => (
                             <motion.div
                                 layout
                                 key={task.id}
                                 onClick={() => navigate(`/tasks/${task.id}`)}
-                                className={`bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 group hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer ${task.status === 'Completed' ? 'opacity-60' : ''}`}
+                                className={`group bg-white p-4 rounded-xl border border-zinc-200 hover:border-zinc-300 hover:shadow-sm transition-all cursor-pointer flex items-center gap-4 ${task.status === 'Completed' ? 'opacity-60 bg-zinc-50' : ''}`}
                             >
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleToggleStatus(task); }}
-                                    className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-all ${task.status === 'Completed'
-                                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
-                                        : 'bg-slate-50 text-slate-300 hover:bg-emerald-50 hover:text-emerald-500 border border-slate-100'
+                                    className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center transition-colors border ${task.status === 'Completed'
+                                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                                        : 'bg-white border-zinc-300 text-transparent hover:border-emerald-500'
                                         }`}
                                 >
-                                    <CheckCircle size={24} fill={task.status === 'Completed' ? "currentColor" : "none"} strokeWidth={task.status === 'Completed' ? 0 : 2} />
+                                    <CheckCircle size={14} fill="currentColor" />
                                 </button>
 
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider border ${getPriorityColor(task.priority)}`}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getPriorityColor(task.priority)}`}>
                                             {task.priority || 'Medium'}
                                         </span>
                                         {task.start_date && (
-                                            <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                            <span className="text-xs text-zinc-400 flex items-center gap-1">
                                                 <Calendar size={12} />
                                                 {new Date(task.start_date).toLocaleDateString()}
                                             </span>
                                         )}
                                     </div>
-                                    <h3 className={`text-lg font-bold text-slate-900 mb-1 ${task.status === 'Completed' ? 'line-through decoration-slate-300' : ''}`}>{task.title}</h3>
-                                    <p className="text-sm text-slate-500 font-medium line-clamp-1">{task.description}</p>
+                                    <h3 className={`text-sm font-medium text-zinc-900 ${task.status === 'Completed' ? 'line-through text-zinc-500' : ''}`}>{task.title}</h3>
+                                    {task.description && <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{task.description}</p>}
                                 </div>
 
-                                <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }}
-                                        className="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100 rounded-2xl transition-all shadow-sm"
+                                        className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </motion.div>
                         )) : (
-                            <div className="py-20 text-center glass-card rounded-[32px] border-dashed border-slate-200">
-                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                    <CheckCircle size={32} />
+                            <div className="py-16 text-center border border-dashed border-zinc-200 rounded-xl">
+                                <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-300">
+                                    <CheckCircle2 size={20} />
                                 </div>
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No tasks found in this section</p>
+                                <h3 className="text-sm font-medium text-zinc-900">No tasks found</h3>
+                                <p className="text-xs text-zinc-500 mt-1">Clear your filters or create a new task.</p>
                             </div>
                         )}
                     </div>

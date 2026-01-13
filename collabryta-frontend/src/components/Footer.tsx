@@ -3,7 +3,7 @@ import {
   Github,
   Linkedin,
   Twitter,
-  Hexagon,
+  Layers,
   Globe
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -12,86 +12,70 @@ const Footer: React.FC = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-white text-slate-600 mt-auto border-t border-slate-200 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-
-        {/* Middle Section: Links Grid */}
-        <div className="py-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12">
-          <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-1.5 bg-blue-600 rounded-lg shadow-sm">
-                <Hexagon size={24} className="text-white fill-blue-600" />
+    <footer className="w-full bg-white border-t border-zinc-200 py-12 lg:py-16">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12 mb-16">
+          <div className="col-span-2 lg:col-span-2">
+            <Link to="/" className="flex items-center gap-2 mb-6">
+              <div className="bg-zinc-900 text-white p-1.5 rounded-lg">
+                <Layers size={20} strokeWidth={2.5} />
               </div>
-              <span className="text-2xl font-bold text-slate-900 tracking-tight">Collabryta</span>
-            </div>
-            <p className="text-slate-500 text-sm leading-relaxed mb-6 max-w-sm">
-              The all-in-one workspace that brings your team's tasks, docs, and conversations together. Designed for speed, built for scale.
+              <span className="text-xl font-bold tracking-tight text-zinc-900">Collabryta</span>
+            </Link>
+            <p className="text-zinc-500 text-sm leading-relaxed mb-6 max-w-sm">
+              The modern workspace for high-performance teams. Sync tasks, docs, and conversations in one unified platform.
             </p>
             <div className="flex gap-4">
-              <SocialLink href="#" icon={<Twitter size={18} />} label="Twitter" />
-              <SocialLink href="#" icon={<Github size={18} />} label="GitHub" />
-              <SocialLink href="#" icon={<Linkedin size={18} />} label="LinkedIn" />
+              <SocialLink href="#" icon={<Twitter size={16} />} label="Twitter" />
+              <SocialLink href="#" icon={<Github size={16} />} label="GitHub" />
+              <SocialLink href="#" icon={<Linkedin size={16} />} label="LinkedIn" />
             </div>
           </div>
 
           <FooterColumn
             title="Platform"
             links={[
-              { label: "Task Management", to: "/tasks" },
-              { label: "Real-time Chat", to: "/messages" },
-              { label: "File Storage", to: "/files" },
-              { label: "Team Members", to: "/team" },
+              { label: "Tasks", to: "/tasks" },
+              { label: "Messages", to: "/messages" },
+              { label: "Files", to: "/files" },
+              { label: "Calendar", to: "/calendar" },
             ]}
           />
 
           <FooterColumn
             title="Company"
             links={[
-              { label: "About Us", to: "/about" },
+              { label: "About", to: "/about" },
               { label: "Careers", to: "/careers" },
               { label: "Blog", to: "/blog" },
-              { label: "Press Kit", to: "/press" },
-              { label: "Contact", to: "/contact" }
+              { label: "Press", to: "/press" }
             ]}
           />
 
           <FooterColumn
-            title="Support"
+            title="Resources"
             links={[
-              { label: "Help Center", to: "/help-center" },
-              { label: "Community", to: "/community" },
-              { label: "API Status", to: "/status" },
-              { label: "Documentation", to: "/docs" },
-              { label: "Report a Bug", to: "/report-bug" }
+              { label: "Help Center", to: "/help" },
+              { label: "API", to: "/api" },
+              { label: "Status", to: "/status" },
+              { label: "Terms", to: "/terms" }
             ]}
           />
         </div>
 
-        {/* Bottom Section */}
-        <div className="py-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col md:flex-row items-center gap-4 text-sm text-slate-500">
-            <span>&copy; {year} Collabryta Inc.</span>
-            <div className="hidden md:block w-1 h-1 bg-slate-300 rounded-full"></div>
-            <Link to="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link>
-            <div className="hidden md:block w-1 h-1 bg-slate-300 rounded-full"></div>
-            <Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link>
-          </div>
+        <div className="border-t border-zinc-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-zinc-500 font-medium">
+            &copy; {year} Collabryta Inc. All rights reserved.
+          </p>
 
           <div className="flex items-center gap-6">
-            <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+            <button className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 transition-colors font-medium">
               <Globe size={14} />
               <span>English (US)</span>
             </button>
-
-            <div className="h-4 w-px bg-slate-200"></div>
-
-            <div className="flex items-center gap-2 cursor-help group">
-              <div className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-              </div>
-              <span className="text-xs font-medium text-slate-600 group-hover:text-green-600 transition-colors">Systems Normal</span>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-sm text-zinc-500 font-medium">All systems normal</span>
             </div>
           </div>
         </div>
@@ -100,16 +84,15 @@ const Footer: React.FC = () => {
   );
 };
 
-// Sub-components
 const FooterColumn: React.FC<{ title: string; links: { label: string; to: string }[] }> = ({ title, links }) => (
   <div>
-    <h3 className="font-bold text-slate-900 text-sm tracking-wide uppercase mb-5">{title}</h3>
+    <h3 className="font-semibold text-zinc-900 text-sm mb-4">{title}</h3>
     <ul className="space-y-3">
       {links.map((link) => (
         <li key={link.label}>
           <Link
             to={link.to}
-            className="text-slate-500 text-sm hover:text-blue-600 hover:translate-x-0.5 transition-all inline-block"
+            className="text-zinc-500 text-sm hover:text-zinc-900 transition-colors"
           >
             {link.label}
           </Link>
@@ -122,7 +105,7 @@ const FooterColumn: React.FC<{ title: string; links: { label: string; to: string
 const SocialLink: React.FC<{ href: string; icon: React.ReactNode; label: string }> = ({ href, icon, label }) => (
   <a
     href={href}
-    className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-slate-400 hover:bg-slate-50 hover:text-blue-600 hover:scale-105 transition-all shadow-sm border border-slate-200"
+    className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-zinc-900 hover:text-white transition-all duration-200"
     aria-label={label}
   >
     {icon}
